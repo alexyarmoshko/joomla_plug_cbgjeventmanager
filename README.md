@@ -12,15 +12,16 @@ Typical use: a club "Meet Officer" / secretary who schedules events and assigns 
 
 ## What it does
 
-- Adds a **"Change Owner"** item to the event ⋮ menu, shown only to group Moderators/Admins of that event's group.
-- Lets them reassign the event owner via a **searchable member picker** (typeahead), so it scales to large groups.
-- Enforces the rule **"an event's owner must be a member of that event's group"** — in the search and again server-side on save.
-- Does **not** show the item to CB global moderators — they already have CB's native inline Owner field, so it would be redundant. Their native behaviour is unchanged.
+- Adds a **"Change Owner"** control to the native event edit form (and a matching event ⋮ menu entry), shown only to group Moderators/Admins of that event's group.
+- Lets them assign the event owner via a **searchable member picker** (typeahead), so it scales to large groups.
+- Enforces the rule **"an event's owner must be a current, effective member of that event's group"** — in the search and again server-side on save.
+- Does **not** show the control to CB global moderators — they already have CB's native inline Owner field, so it would be redundant. Their native behaviour is unchanged.
 
 ## How it works
 
-- Hooks the GroupJive `gj_onDisplayEvent` trigger to inject the menu item (no HTML rewriting, no template edits).
-- Handles the reassignment through its **own** plugin route, writing only `#__groupjive_plugin_events.user_id`. All authorization (CB spoof token, actor's group status, target membership) is enforced server-side; the UI is never the security boundary.
+- Hooks three GroupJive triggers — `gj_onDisplayEvent` (menu entry), `gj_onAfterDisplayEventEdit` (injects the owner picker into the native edit form), and `gj_onBeforeUpdateEvent` (assigns the selected owner immediately before GroupJive's own `EventTable::store()` call) — so the reassignment rides on the **native** event edit/save lifecycle. No HTML rewriting, no template edits, no isolated database write outside that lifecycle.
+- All authorization (CB token, actor's effective group status, target membership/account status) is enforced server-side on every save; the UI is never the security boundary. A forged or stale owner field is silently ignored rather than applied.
+- The only other surface touched is a small JSON search endpoint (`format=raw`) backing the typeahead — verified not to leak into the GroupJive Events module, which renders this trigger's return value as page content rather than a menu.
 
 See [`docs/requirements.md`](docs/requirements.md) and [`docs/execution_plan.md`](docs/execution_plan.md) for the full design.
 
