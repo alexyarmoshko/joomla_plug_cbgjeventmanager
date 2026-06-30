@@ -19,8 +19,8 @@ Typical use: a club "Meet Officer" / secretary who schedules events and assigns 
 
 ## How it works
 
-- Hooks three GroupJive triggers — `gj_onDisplayEvent` (menu entry), `gj_onAfterDisplayEventEdit` (injects the owner picker into the native edit form), and `gj_onBeforeUpdateEvent` (assigns the selected owner immediately before GroupJive's own `EventTable::store()` call) — so the reassignment rides on the **native** event edit/save lifecycle. No HTML rewriting, no template edits, no isolated database write outside that lifecycle.
-- All authorization (CB token, actor's effective group status, target membership/account status) is enforced server-side on every save; the UI is never the security boundary. A forged or stale owner field is silently ignored rather than applied.
+- Hooks three GroupJive triggers — `gj_onDisplayEvent` (menu entry on existing events), `gj_onAfterDisplayEventEdit` (inserts the owner picker inside the native edit form, existing events only), and `gj_onBeforeUpdateEvent` (assigns the selected owner immediately before GroupJive's own `EventTable::store()` call) — so the reassignment rides on the **native** event edit/save lifecycle. No HTML rewriting, no template edits, no isolated database write outside that lifecycle.
+- All authorization (form/CSRF token, actor's effective group status resolved from the session, target membership/account status) is enforced server-side on every save — the save hook re-verifies the token itself, since it also fires from token-less paths. The UI is never the security boundary; a forged or stale owner field is dropped (only the owner change — the rest of an authorized save proceeds).
 - The only other surface touched is a small JSON search endpoint (`format=raw`) backing the typeahead — verified not to leak into the GroupJive Events module, which renders this trigger's return value as page content rather than a menu.
 
 See [`docs/requirements.md`](docs/requirements.md) and [`docs/execution_plan.md`](docs/execution_plan.md) for the full design.
