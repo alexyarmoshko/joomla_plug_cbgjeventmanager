@@ -14,7 +14,7 @@ Typical use: a club "Meet Officer" / secretary who schedules events and assigns 
 
 - Adds a **"Change Owner"** control to the native event edit form (and a matching event ⋮ menu entry), shown only to group Moderators/Admins of that event's group.
 - Lets them assign the event owner via a **searchable member picker** (typeahead), so it scales to large groups.
-- Enforces the rule **"an event's owner must be a current, effective member of that event's group"** — in the search and again server-side on save.
+- Validates, **at assignment time only**, that the chosen owner is a current, effective member of that event's group — in the search and again server-side on save. (Membership isn't a maintained invariant: events whose existing owner's membership later lapses are left untouched and are out of scope.)
 - Does **not** show the control to CB global moderators — they already have CB's native inline Owner field, so it would be redundant. Their native behaviour is unchanged.
 
 ## How it works
