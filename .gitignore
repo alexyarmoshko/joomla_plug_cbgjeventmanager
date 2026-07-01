@@ -5,7 +5,8 @@ installation/
 .vscode/
 .claude/
 .codex/
-.agent/
+.agents/
+.serena/
 AGENTS.md
 CLAUDE.md
 GEMINI.md
