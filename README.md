@@ -61,7 +61,8 @@ Plugin parameters (CB → Plugin Management → CB GJ Event Manager):
 From a Unix-like shell (WSL / Git Bash) at the repo root:
 
 - `make info` — print plugin name, version, and package paths.
-- `make dist` — build the ZIP in `installation/` and update the update-server XML (version, download URL, sha256).
+- `make clean dist` — rebuild the ZIP in `installation/` and update the update-server XML (version, download URL, sha256). Use this for release artifacts.
+- `make dist` — update the current version's update-server XML, building the ZIP first only when that version's archive does not already exist.
 - `make clean` — remove the built ZIP.
 
 ## License
