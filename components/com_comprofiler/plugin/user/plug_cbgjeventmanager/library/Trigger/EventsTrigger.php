@@ -73,7 +73,19 @@ class EventsTrigger extends \cbPluginHandler
 			return;
 		}
 
-		$pos	=	strrpos( $return, '</form>' );
+		// Insert the picker just before the native submit-button row so it sits with the other fields,
+		// above "Update Event"/"Cancel". Anchor on the submit button (`gjButtonSubmit`) and back up to its
+		// enclosing row wrapper; fall back to before the closing </form> if the markup changes.
+		$pos		=	false;
+		$submitPos	=	strpos( $return, 'gjButtonSubmit' );
+
+		if ( $submitPos !== false ) {
+			$pos	=	strrpos( substr( $return, 0, $submitPos ), '<div class="row no-gutters">' );
+		}
+
+		if ( $pos === false ) {
+			$pos	=	strrpos( $return, '</form>' );
+		}
 
 		if ( $pos === false ) {
 			return;

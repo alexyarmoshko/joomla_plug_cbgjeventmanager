@@ -61,6 +61,12 @@ class CBplug_cbgjeventmanager extends cbPluginHandler
 			$this->outputJson( array( 'error' => 'not_authorized' ), 403 );
 		}
 
+		// Fail closed (controlled JSON) rather than fatal if GroupJive Events is absent/disabled while
+		// this plugin is enabled, before touching any GroupJive Events class.
+		if ( ! CBGJEventManager::isGroupJiveEventsAvailable() ) {
+			$this->outputJson( array( 'error' => 'dependency_unavailable' ), 503 );
+		}
+
 		$event		=	CBGroupJiveEvents::getEvent( $this->getInput()->getInt( 'id', 0 ) );
 
 		if ( ! $event->getInt( 'id', 0 ) ) {

@@ -166,6 +166,28 @@ class CBGJEventManager
 	}
 
 	/**
+	 * Whether the GroupJive + GroupJive Events dependency is present and autoloadable. Used by the
+	 * plugin-owned search route to fail closed (controlled JSON) rather than fataling if the plugin is
+	 * enabled while GroupJive Events is absent/disabled. The trigger hooks don't need this — they only
+	 * fire when GroupJive itself is running.
+	 *
+	 * @return bool
+	 */
+	public static function isGroupJiveEventsAvailable(): bool
+	{
+		global $_PLUGINS;
+
+		$_PLUGINS->loadPluginGroup( 'user/plug_cbgroupjive/plugins' );
+
+		if ( ! $_PLUGINS->getLoadedPlugin( 'user/plug_cbgroupjive/plugins', 'cbgroupjiveevents' ) ) {
+			return false;
+		}
+
+		return class_exists( 'CB\\Plugin\\GroupJive\\CBGroupJive' )
+			&& class_exists( 'CB\\Plugin\\GroupJiveEvents\\CBGroupJiveEvents' );
+	}
+
+	/**
 	 * Route guard for the plugin-owned owner/search endpoint. Unlike the trigger hooks, this route is
 	 * NOT downstream of native GroupJive access enforcement, so it mirrors native showEventEdit access.
 	 *
