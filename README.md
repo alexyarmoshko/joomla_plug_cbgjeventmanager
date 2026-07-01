@@ -33,7 +33,9 @@ See [`docs/requirements.md`](docs/requirements.md) and [`docs/execution_plan.md`
 
 ## Installation
 
-Install the ZIP from `installation/` via **Joomla → System → Install → Extensions**, then enable it in **Community Builder → Plugin Management**.
+Install the ZIP from the GitHub release (`plug_cbgjeventmanager-v0-1-0.zip`) via **Joomla → System → Install → Extensions**, then enable it in **Community Builder → Plugin Management**.
+
+For local development builds, use the ZIP generated in `installation/`.
 
 ## Configuration
 

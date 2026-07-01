@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-07-01)
 
 First implementation of **Yak Shaver CB GJ Event Manager** (`plug_cbgjeventmanager`), a Community Builder GroupJive user plugin that lets group Moderators/Admins assign an event's owner from within the native event edit form — scoped per-group, without CB global-moderator rights.
 
@@ -14,6 +14,7 @@ First implementation of **Yak Shaver CB GJ Event Manager** (`plug_cbgjeventmanag
 ### Security
 
 - Owner assignment re-verifies the Joomla form token in the save hook (the same table update hook is reachable from token-less publish/unpublish paths), resolves the actor from the CB session, and re-checks group status and target eligibility server-side. A forged or stale owner field drops only the owner change; the rest of an authorized save proceeds.
+- The owner-search endpoint fails closed with controlled JSON if GroupJive Events is unavailable, instead of calling GroupJive Events classes blindly.
 - Membership is validated **only at assignment time**; existing non-member owners are out of scope and never scanned, flagged, or altered.
 
 ### Requirements
@@ -24,4 +25,5 @@ First implementation of **Yak Shaver CB GJ Event Manager** (`plug_cbgjeventmanag
 ### Notes
 
 - No CB core files are modified; the plugin installs and uninstalls cleanly via the standard CB plugin installer.
-- Not yet installed/verified on a live DDEV environment (see execution plan test matrix for the pending manual checks).
+- Released as `plug_cbgjeventmanager-v0-1-0.zip`; the update XML points at the GitHub release asset and includes SHA256 `ea098f735425fdd57c564fd7f131f243b36b622aad33b5ece82dd7565d288820`.
+- Verified through live install feedback before release; the owner picker renders above the native Update Event/Cancel button row and remains inside the native form.
