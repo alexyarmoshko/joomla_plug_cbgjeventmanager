@@ -53,7 +53,7 @@ Plugin parameters (CB → Plugin Management → CB GJ Event Manager):
 | `components/com_comprofiler/plugin/user/plug_cbgjeventmanager/` | Installable plugin source (manifest, entry, controller, library, templates, language). |
 | `Makefile` | Build the installable ZIP and refresh the update-server XML. |
 | `plug_cbgjeventmanager.update.xml` | Joomla update-server descriptor. |
-| `docs/` | Requirements, execution plan, changelog, release notes. |
+| `docs/` | Requirements, execution plan, changelog, release notes, code reviews. |
 | `installation/` | Build output (gitignored). |
 
 ## Build

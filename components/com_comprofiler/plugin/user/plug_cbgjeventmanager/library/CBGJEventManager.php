@@ -241,6 +241,7 @@ class CBGJEventManager
 				.	"\n AND j." . $_CB_database->NameQuote( 'block' ) . ' = 0'
 				.	"\n AND cb." . $_CB_database->NameQuote( 'approved' ) . ' = 1'
 				.	"\n AND cb." . $_CB_database->NameQuote( 'confirmed' ) . ' = 1'
+				.	"\n AND cb." . $_CB_database->NameQuote( 'banned' ) . ' = 0'
 				.	"\n AND ( gu." . $_CB_database->NameQuote( 'user_id' ) . ' IS NOT NULL'
 				.		' OR j.' . $_CB_database->NameQuote( 'id' ) . ' = ' . (int) $group->getInt( 'user_id', 0 ) . ' )';
 		$_CB_database->setQuery( $query );
@@ -266,6 +267,8 @@ class CBGJEventManager
 			return array();
 		}
 
+		// getEscaped( $search, true ) escapes both SQL quotes and LIKE metacharacters (% and _) via
+		// addcslashes; see MysqlDatabaseDriver::getEscaped() / Joomla escape($text, true).
 		$like		=	$_CB_database->Quote( '%' . $_CB_database->getEscaped( $search, true ) . '%', false );
 
 		$query		=	'SELECT j.' . $_CB_database->NameQuote( 'id' ) . ' AS ' . $_CB_database->NameQuote( 'id' )
@@ -280,6 +283,7 @@ class CBGJEventManager
 					.	"\n WHERE j." . $_CB_database->NameQuote( 'block' ) . ' = 0'
 					.	"\n AND cb." . $_CB_database->NameQuote( 'approved' ) . ' = 1'
 					.	"\n AND cb." . $_CB_database->NameQuote( 'confirmed' ) . ' = 1'
+					.	"\n AND cb." . $_CB_database->NameQuote( 'banned' ) . ' = 0'
 					.	"\n AND ( gu." . $_CB_database->NameQuote( 'user_id' ) . ' IS NOT NULL'
 					.		' OR j.' . $_CB_database->NameQuote( 'id' ) . ' = ' . (int) $group->getInt( 'user_id', 0 ) . ' )'
 					.	"\n AND ( j." . $_CB_database->NameQuote( 'name' ) . ' LIKE ' . $like

@@ -16,6 +16,9 @@ GITHUB_OWNER ?= alexyarmoshko
 GITHUB_REPO ?= joomla_plug_cbgjeventmanager
 GITHUB_REF ?= $(PLUGIN_VERSION)
 
+# All installable plugin files; used as prerequisites so the ZIP rebuilds when any source changes.
+PLUGIN_SOURCES := $(shell find "$(PLUGIN_DIR)" -type f)
+
 .PHONY: dist info clean
 
 info:
@@ -42,7 +45,7 @@ dist: $(ZIP_PATH)
 	@mkdir -p "$(INSTALL_DIR)"
 	@echo "Updated $(PLUGIN_UPDATE_XML)"
 
-$(ZIP_PATH):
+$(ZIP_PATH): $(PLUGIN_SOURCES) $(PLUGIN_MANIFEST_XML)
 	@mkdir -p "$(INSTALL_DIR)"
 	@rm -f "$(ZIP_PATH)"
 	@cd "$(PLUGIN_DIR)" && zip -qr -X "$(CURDIR)/$(ZIP_PATH)" . -x "*.DS_Store" -x "*/.DS_Store"
