@@ -1,5 +1,21 @@
 # Release Notes
 
+## 0.1.1 (2026-08-06)
+
+**A build-workflow release with no functional changes.** Every shipped PHP, JavaScript and language file is byte-identical to 0.1.0; the only change to a packaged file is the `<release>` version in the manifest.
+
+### Build
+
+- The release package is now built from a **`git archive` export of the tag** rather than the working tree, and written by a vendored deterministic ZIP writer (`tools/jzip.php`) rather than `zip`. That removes the three things which previously let the builder's machine into the archive: working-tree line endings, file mtimes, and the host-OS and permission bits `zip` records.
+- **The package is therefore reproducible**: rebuilding a tag produces the same bytes, and so the same `sha256`, on any machine. Verified byte-identical between Windows and Linux.
+- The release is gated. Tagging refuses a dirty tree, an existing tag, or a version with no matching heading here; packaging refuses to run unless the checkout is a clean tree at the tag, and refuses command-line overrides of anything that decides the published bytes.
+- The update descriptor is now generated beside the package as a build artifact. The copy tracked in the repository is a **template** whose `<sha256>` is a zero placeholder, so a template can never be published in place of a real descriptor.
+
+### Notes
+
+- **The package bytes differ from 0.1.0 even though its contents do not.** The previous archive stored separate directory entries; the deterministic writer emits only the listed files. The installed result is the same 15 files in the same layout.
+- This release is not an update *notification* — Community Builder plugins have no update channel, from Joomla or from CB. Install the ZIP over the existing plugin through **Community Builder → Plugin Management**, as for 0.1.0. See the README's "Updating" section for why.
+
 ## 0.1.0 (2026-07-01)
 
 First implementation of **Yak Shaver CB GJ Event Manager** (`plug_cbgjeventmanager`), a Community Builder GroupJive user plugin that lets group Moderators/Admins assign an event's owner from within the native event edit form — scoped per-group, without CB global-moderator rights.
