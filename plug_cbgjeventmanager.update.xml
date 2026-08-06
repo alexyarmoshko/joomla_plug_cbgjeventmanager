@@ -14,7 +14,7 @@
         <tags>
             <tag>stable</tag>
         </tags>
-        <sha256>ea098f735425fdd57c564fd7f131f243b36b622aad33b5ece82dd7565d288820</sha256>
+        <sha256>0000000000000000000000000000000000000000000000000000000000000000</sha256>
         <targetplatform name="joomla" version="((5\.(0|1|2|3|4|5|6|7|8|9))|(6\.(0|1|2|3|4|5|6|7|8|9)))" />
     </update>
 </updates>
