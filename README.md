@@ -33,7 +33,9 @@ See [`docs/requirements.md`](docs/requirements.md) for the full design.
 
 ## Installation
 
-Install the ZIP from the GitHub release (`plug_cbgjeventmanager-v0-1-0.zip`) via **Joomla → System → Install → Extensions**, then enable it in **Community Builder → Plugin Management**.
+Install the ZIP from the GitHub release (`plug_cbgjeventmanager-v<version>.zip`) through **Community Builder → Plugin Management**, on the **Upload Package File** tab, then enable it in the plugin list.
+
+This is a Community Builder plugin, not a Joomla one. Joomla's own **System → Install → Extensions** will not accept it: the manifest root is `<cbinstall>`, which Joomla's installer does not recognise. CB has its own installer, and it is the only one that can install this package.
 
 For local development builds, use the ZIP generated in `installation/dev/`.
 
