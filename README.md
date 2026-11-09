@@ -24,8 +24,6 @@ Typical use: a club "Meet Officer" / secretary who schedules events and assigns 
 - The only other surface touched is a small JSON search endpoint (`format=raw`) backing the typeahead; it enforces its own token and event-access checks before returning member data.
 - The display trigger always returns an empty string after mutating the event menu, so GroupJive Events module surfaces do not render plugin content.
 
-See [`docs/requirements.md`](docs/requirements.md) for the full design.
-
 ## Requirements
 
 - Joomla 5.x (PHP 8.1+)
@@ -66,7 +64,7 @@ Plugin parameters (CB → Plugin Management → CB GJ Event Manager):
 | `Makefile` | Tag a release, and build the package reproducibly from that tag. |
 | `tools/jzip.php` | Deterministic ZIP writer used by the build. Never shipped in the package. |
 | `plug_cbgjeventmanager.update.xml` | Update-descriptor **template**; its `<sha256>` is a zero placeholder. |
-| `docs/` | Requirements and release notes. |
+| `docs/` | Release notes. |
 | `build/`, `installation/` | Staging and build output (both gitignored). |
 
 ## Build
