@@ -10,8 +10,10 @@
 namespace CB\Plugin\GJEventManager;
 
 use CB\Database\Table\UserTable;
-use CB\Plugin\GroupJive\CBGroupJive;
+use CB\Plugin\GroupJive\Helper\GroupHelper;
+use CB\Plugin\GroupJive\Helper\RouteHelper;
 use CB\Plugin\GroupJive\Table\GroupTable;
+use CB\Plugin\GroupJiveEvents\Helper\EventHelper;
 use CB\Plugin\GroupJiveEvents\Table\EventTable;
 use CBLib\Application\Application;
 use CBLib\Registry\Registry;
@@ -23,6 +25,10 @@ use CBLib\Registry\Registry;
  *
  * Membership is validated only at assignment time (not a maintained invariant); the plugin never
  * inspects or alters an event's existing ownership.
+ *
+ * Requires GroupJive 4. GroupJive 4.0.0 removed the CBGroupJive and CBGroupJiveEvents classes that
+ * 3.x offered; their replacements are the Helper classes used here. On GroupJive 3.x those classes
+ * are absent, so every check below answers "no" and the plugin stays inert instead of failing.
  */
 class CBGJEventManager
 {
@@ -99,6 +105,63 @@ class CBGJEventManager
 	}
 
 	/**
+	 * The user's name as CB is configured to format it (the formatname field's value), as plain text.
+	 *
+	 * The formatname field's getField() supports only output formats such as html, which may wrap the
+	 * name in a profile link; any other format logs a warning and returns this same value.
+	 *
+	 * UserTable::getFormattedName() returns the name already passed through htmlspecialchars() with
+	 * PHP's default flags, so "O'Shea" arrives as "O&#039;Shea". This undoes that one layer. Callers
+	 * escape the result for their own output: htmlspecialchars() in HTML, textContent in the picker.
+	 *
+	 * @param int $userId
+	 * @return string  '' when the user does not exist.
+	 */
+	public static function getDisplayName( int $userId ): string
+	{
+		if ( $userId <= 0 ) {
+			return '';
+		}
+
+		$user	=	\CBuser::getUserDataInstance( $userId );
+
+		if ( ! $user->getInt( 'id', 0 ) ) {
+			return '';
+		}
+
+		return trim( htmlspecialchars_decode( (string) $user->getFormattedName(), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 ) );
+	}
+
+	/**
+	 * Whether the GroupJive 4 helpers this plugin calls can be loaded. False on GroupJive 3.x, which
+	 * has none of them, and when GroupJive is not installed.
+	 *
+	 * @return bool
+	 */
+	public static function isGroupJiveSupported(): bool
+	{
+		static $supported	=	null;
+
+		if ( $supported === null ) {
+			$supported		=	class_exists( GroupHelper::class ) && class_exists( RouteHelper::class );
+		}
+
+		return $supported;
+	}
+
+	/**
+	 * Whether the user is a CB global moderator. GroupJive 3.x wrapped this same call as
+	 * CBGroupJive::isModerator().
+	 *
+	 * @param int $userId
+	 * @return bool
+	 */
+	public static function isGlobalModerator( int $userId ): bool
+	{
+		return Application::User( $userId )->isGlobalModerator();
+	}
+
+	/**
 	 * The one check the plugin adds on top of native enforcement: actor is a CB global moderator
 	 * or has sufficient effective group status.
 	 *
@@ -108,15 +171,19 @@ class CBGJEventManager
 	 */
 	public static function canManageEventOwner( $actor, $group ): bool
 	{
+		if ( ( ! self::isGroupJiveSupported() ) || ( ! ( $actor instanceof UserTable ) ) || ( ! ( $group instanceof GroupTable ) ) ) {
+			return false;
+		}
+
 		if ( ! $actor->getInt( 'id', 0 ) ) {
 			return false;
 		}
 
-		if ( CBGroupJive::isModerator( $actor->getInt( 'id', 0 ) ) ) {
+		if ( self::isGlobalModerator( $actor->getInt( 'id', 0 ) ) ) {
 			return true;
 		}
 
-		return (int) CBGroupJive::getGroupStatus( $actor, $group ) >= self::getOwnerAssignLevel();
+		return (int) GroupHelper::getGroupStatus( $actor, $group ) >= self::getOwnerAssignLevel();
 	}
 
 	/**
@@ -130,20 +197,28 @@ class CBGJEventManager
 	 */
 	public static function shouldOfferOwnerControl( $actor, $group, $event ): bool
 	{
-		if ( ( ! self::isEnabled() ) || ( $event->getInt( 'id', 0 ) <= 0 ) || ( ! $actor->getInt( 'id', 0 ) ) ) {
+		if ( ( ! self::isEnabled() ) || ( ! self::isGroupJiveSupported() ) ) {
 			return false;
 		}
 
-		if ( CBGroupJive::isModerator( $actor->getInt( 'id', 0 ) ) ) {
+		if ( ( ! ( $actor instanceof UserTable ) ) || ( ! ( $group instanceof GroupTable ) ) || ( ! ( $event instanceof EventTable ) ) ) {
 			return false;
 		}
 
-		return (int) CBGroupJive::getGroupStatus( $actor, $group ) >= self::getOwnerAssignLevel();
+		if ( ( $event->getInt( 'id', 0 ) <= 0 ) || ( ! $actor->getInt( 'id', 0 ) ) ) {
+			return false;
+		}
+
+		if ( self::isGlobalModerator( $actor->getInt( 'id', 0 ) ) ) {
+			return false;
+		}
+
+		return (int) GroupHelper::getGroupStatus( $actor, $group ) >= self::getOwnerAssignLevel();
 	}
 
 	/**
 	 * Parameters of the GroupJive Events integration plugin (for the search route's native-equivalent
-	 * access check). Mirrors GroupJive's own integration-plugin lookup (CBGroupJive.php:97).
+	 * access check). Mirrors GroupJive's own integration-plugin lookup.
 	 *
 	 * @return null|Registry
 	 */
@@ -183,8 +258,28 @@ class CBGJEventManager
 			return false;
 		}
 
-		return class_exists( 'CB\\Plugin\\GroupJive\\CBGroupJive' )
-			&& class_exists( 'CB\\Plugin\\GroupJiveEvents\\CBGroupJiveEvents' );
+		return self::isGroupJiveSupported() && class_exists( EventHelper::class );
+	}
+
+	/**
+	 * Load an event by id. Call only after isGroupJiveEventsAvailable() has returned true.
+	 *
+	 * @param int $id
+	 * @return EventTable  An empty table when the event does not exist.
+	 */
+	public static function getEvent( int $id ): EventTable
+	{
+		return EventHelper::getEvent( $id );
+	}
+
+	/**
+	 * The current page as a base64 return URL, the form GroupJive's own links carry.
+	 *
+	 * @return null|string
+	 */
+	public static function getReturn(): ?string
+	{
+		return RouteHelper::getReturn();
 	}
 
 	/**
@@ -197,7 +292,15 @@ class CBGJEventManager
 	 */
 	public static function canAccessEventOwnerSearch( $actor, $event ): bool
 	{
-		if ( ( ! self::isEnabled() ) || ( $event->getInt( 'id', 0 ) <= 0 ) || ( ! $actor->getInt( 'id', 0 ) ) ) {
+		if ( ( ! self::isEnabled() ) || ( ! self::isGroupJiveSupported() ) ) {
+			return false;
+		}
+
+		if ( ( ! ( $actor instanceof UserTable ) ) || ( ! ( $event instanceof EventTable ) ) ) {
+			return false;
+		}
+
+		if ( ( $event->getInt( 'id', 0 ) <= 0 ) || ( ! $actor->getInt( 'id', 0 ) ) ) {
 			return false;
 		}
 
@@ -207,11 +310,11 @@ class CBGJEventManager
 			return false;
 		}
 
-		if ( ! CBGroupJive::canAccessGroup( $group, $actor ) ) {
+		if ( ! GroupHelper::canAccessGroup( $group, $actor ) ) {
 			return false;
 		}
 
-		if ( ! CBGroupJive::isModerator( $actor->getInt( 'id', 0 ) ) ) {
+		if ( ! self::isGlobalModerator( $actor->getInt( 'id', 0 ) ) ) {
 			$eventsParams	=	self::getEventsPluginParams();
 
 			if ( $eventsParams === null ) {
@@ -323,8 +426,7 @@ class CBGJEventManager
 
 		foreach ( $rows as $row ) {
 			$id			=	(int) $row->id;
-			$formatted	=	\CBuser::getInstance( $id, false )->getField( 'formatname', null, 'text', 'none', 'list', 0, true );
-			$name		=	trim( (string) $formatted );
+			$name		=	self::getDisplayName( $id );
 
 			$results[]	=	array(
 				'id'	=>	$id,

@@ -10,7 +10,6 @@
 namespace CB\Plugin\GJEventManager\Trigger;
 
 use CB\Plugin\GJEventManager\CBGJEventManager;
-use CB\Plugin\GroupJive\CBGroupJive;
 use CBLib\Application\Application;
 use CBLib\Language\CBTxt;
 
@@ -47,7 +46,7 @@ class EventsTrigger extends \cbPluginHandler
 			'action'	=>	'events',
 			'func'		=>	'edit',
 			'id'		=>	$row->getInt( 'id', 0 ),
-			'return'	=>	CBGroupJive::getReturn(),
+			'return'	=>	CBGJEventManager::getReturn(),
 		) );
 
 		$menu[]		=	'<a href="' . $url . '" class="dropdown-item"><span class="fa fa-user-o"></span> '
@@ -57,41 +56,29 @@ class EventsTrigger extends \cbPluginHandler
 	}
 
 	/**
-	 * Insert the owner picker into the native event edit form (existing events only), before the
-	 * closing </form> so the hidden field is submitted with the native save.
+	 * Add the owner picker to the native event edit form (existing events only).
 	 *
-	 * @param string                                      $return  Rendered form HTML (by reference)
+	 * GroupJive 4 fires this trigger inside the form, after the submit buttons and the form token,
+	 * and echoes what the handlers return. The picker is therefore returned as HTML; owner-picker.js
+	 * moves its row above the Update/Cancel buttons. Without JavaScript the row stays below them,
+	 * still inside the form, so the hidden owner field is submitted either way.
+	 *
+	 * GroupJive 3.x fired this trigger with the rendered form as a leading by-reference argument.
+	 * That call puts a string in $row, which fails the type check below, so the handler adds nothing.
+	 *
 	 * @param \CB\Plugin\GroupJiveEvents\Table\EventTable $row
 	 * @param array                                       $input
 	 * @param \CB\Plugin\GroupJive\Table\GroupTable       $group
 	 * @param \CB\Database\Table\UserTable                $user
-	 * @return void
+	 * @return string  The picker row, or '' when the actor may not change the owner.
 	 */
-	public function onAfterDisplayEventEdit( &$return, $row, $input, $group, $user ): void
+	public function onAfterDisplayEventEdit( $row, $input = null, $group = null, $user = null ): string
 	{
 		if ( ! CBGJEventManager::shouldOfferOwnerControl( $user, $group, $row ) ) {
-			return;
+			return '';
 		}
 
-		// Insert the picker just before the native submit-button row so it sits with the other fields,
-		// above "Update Event"/"Cancel". Anchor on the submit button (`gjButtonSubmit`) and back up to its
-		// enclosing row wrapper; fall back to before the closing </form> if the markup changes.
-		$pos		=	false;
-		$submitPos	=	strpos( $return, 'gjButtonSubmit' );
-
-		if ( $submitPos !== false ) {
-			$pos	=	strrpos( substr( $return, 0, $submitPos ), '<div class="row no-gutters">' );
-		}
-
-		if ( $pos === false ) {
-			$pos	=	strrpos( $return, '</form>' );
-		}
-
-		if ( $pos === false ) {
-			return;
-		}
-
-		$return	=	substr( $return, 0, $pos ) . $this->getOwnerPickerHtml( $row ) . substr( $return, $pos );
+		return $this->getOwnerPickerHtml( $row );
 	}
 
 	/**
@@ -162,8 +149,7 @@ class EventsTrigger extends \cbPluginHandler
 			'id'		=>	$row->getInt( 'id', 0 ),
 		), 'raw' );
 
-		$currentOwner	=	\CBuser::getInstance( $row->getInt( 'user_id', 0 ), false )->getField( 'formatname', null, 'text', 'none', 'list', 0, true );
-		$currentOwner	=	trim( (string) $currentOwner );
+		$currentOwner	=	CBGJEventManager::getDisplayName( $row->getInt( 'user_id', 0 ) );
 
 		$plugin			=	$_PLUGINS->getLoadedPlugin( 'user', 'cbgjeventmanager' );
 		$jsUrl			=	( $plugin ? $_PLUGINS->getPluginLivePath( $plugin ) . '/media/js/owner-picker.js' : '' );

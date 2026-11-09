@@ -6,9 +6,9 @@
 	<copyright>(C) 2026 Yak Shaver https://www.kayakshaver.com</copyright>
 	<license>GNU General Public License version 2 or later</license>
 	<authorEmail>me@kayakshaver.com</authorEmail>
-	<description>Lets CB GroupJive group Moderators/Admins assign an event's owner from within the native event edit form, scoped per-group and without CB global-moderator rights. Requires Community Builder GroupJive with the GroupJive Events plugin.</description>
+	<description>Lets CB GroupJive group Moderators/Admins assign an event's owner from within the native event edit form, scoped per-group and without CB global-moderator rights. Requires Community Builder GroupJive 4 with the GroupJive Events plugin.</description>
 	<version>2.11.0</version>
-	<release>0.1.1</release>
+	<release>0.2.0</release>
 	<files>
 		<filename plugin="cbgjeventmanager">cbgjeventmanager.php</filename>
 		<filename>component.cbgjeventmanager.php</filename>

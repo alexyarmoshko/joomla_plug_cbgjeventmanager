@@ -17,7 +17,7 @@ global $_PLUGINS;
 AutoLoader::registerExactMap( '%^CB/Plugin/GJEventManager/(.+)%i', __DIR__ . '/library/$1.php' );
 
 // GroupJive fires its gj_* triggers through the CB plugin handler; register our handlers for the
-// three integration points. Handlers no-op unless GroupJive Events is present and the plugin is enabled.
+// three integration points. Handlers no-op unless the plugin is enabled and GroupJive 4 is present.
 $_PLUGINS->registerFunction( 'gj_onDisplayEvent', 'onDisplayEvent', EventsTrigger::class );
 $_PLUGINS->registerFunction( 'gj_onAfterDisplayEventEdit', 'onAfterDisplayEventEdit', EventsTrigger::class );
 $_PLUGINS->registerFunction( 'gj_onBeforeUpdateEvent', 'onBeforeUpdateEvent', EventsTrigger::class );

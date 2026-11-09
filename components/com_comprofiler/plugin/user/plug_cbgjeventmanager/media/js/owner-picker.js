@@ -133,9 +133,28 @@
 		});
 	}
 
+	// GroupJive 4 renders the plugin's row after the form's Update/Cancel buttons. Move it into
+	// the field list, just above the row holding the submit button. If that row is not found the
+	// picker stays where it is: still inside the form, so it still works.
+	function placeRow(root) {
+		var row = root.closest('.gjEventManagerOwnerRow');
+		var form = row ? row.closest('form') : null;
+		var submit = form ? form.querySelector('.gjButtonSubmit') : null;
+		var buttons = submit ? submit.closest('.row') : null;
+
+		if (!buttons || buttons === row || buttons.parentNode !== row.parentNode) {
+			return;
+		}
+
+		buttons.parentNode.insertBefore(row, buttons);
+	}
+
 	function initAll() {
 		var roots = document.querySelectorAll('.cbgjeventmanager-owner-picker');
-		Array.prototype.forEach.call(roots, initPicker);
+		Array.prototype.forEach.call(roots, function (root) {
+			placeRow(root);
+			initPicker(root);
+		});
 	}
 
 	if (document.readyState === 'loading') {

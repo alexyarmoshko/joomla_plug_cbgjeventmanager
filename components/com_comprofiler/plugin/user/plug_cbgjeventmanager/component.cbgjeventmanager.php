@@ -8,7 +8,6 @@
  */
 
 use CB\Plugin\GJEventManager\CBGJEventManager;
-use CB\Plugin\GroupJiveEvents\CBGroupJiveEvents;
 use CBLib\Application\Application;
 
 if ( ! ( defined( '_VALID_CB' ) || defined( '_JEXEC' ) || defined( '_VALID_MOS' ) ) ) { die( 'Direct Access to this location is not allowed.' ); }
@@ -61,13 +60,13 @@ class CBplug_cbgjeventmanager extends cbPluginHandler
 			$this->outputJson( array( 'error' => 'not_authorized' ), 403 );
 		}
 
-		// Fail closed (controlled JSON) rather than fatal if GroupJive Events is absent/disabled while
-		// this plugin is enabled, before touching any GroupJive Events class.
+		// Fail closed (controlled JSON) rather than fatal if GroupJive Events is absent or disabled, or
+		// GroupJive is older than 4, before touching any GroupJive Events class.
 		if ( ! CBGJEventManager::isGroupJiveEventsAvailable() ) {
 			$this->outputJson( array( 'error' => 'dependency_unavailable' ), 503 );
 		}
 
-		$event		=	CBGroupJiveEvents::getEvent( $this->getInput()->getInt( 'id', 0 ) );
+		$event		=	CBGJEventManager::getEvent( $this->getInput()->getInt( 'id', 0 ) );
 
 		if ( ! $event->getInt( 'id', 0 ) ) {
 			$this->outputJson( array( 'error' => 'not_found' ), 404 );

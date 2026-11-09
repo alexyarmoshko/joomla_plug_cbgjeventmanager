@@ -7,9 +7,9 @@
         <type>plugin</type>
         <folder>user</folder>
         <client>site</client>
-        <version>0.1.1</version>
+        <version>0.2.0</version>
         <downloads>
-            <downloadurl type="full" format="zip">https://github.com/alexyarmoshko/joomla_plug_cbgjeventmanager/releases/download/0.1.0/plug_cbgjeventmanager-v0-1-0.zip</downloadurl>
+            <downloadurl type="full" format="zip">https://github.com/alexyarmoshko/joomla_plug_cbgjeventmanager/releases/download/0.2.0/plug_cbgjeventmanager-v0-2-0.zip</downloadurl>
         </downloads>
         <tags>
             <tag>stable</tag>

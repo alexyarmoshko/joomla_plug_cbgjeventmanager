@@ -1,5 +1,26 @@
 # Release Notes
 
+## 0.2.0 (2026-11-09)
+
+**Support for CB GroupJive 4. GroupJive 3.x is no longer supported.**
+
+### Fixes
+
+- **Members no longer get HTTP 500 on pages that list events.** GroupJive 4.0 removed the `CBGroupJive` and `CBGroupJiveEvents` classes. The plugin now calls their replacements: `GroupHelper`, `RouteHelper`, `EventHelper` and CB's own global-moderator check.
+- **The event edit form works again.** GroupJive 4 calls `gj_onAfterDisplayEventEdit` with four arguments and prints what the handlers return; the old five-argument handler would have thrown `ArgumentCountError`. The handler now returns the picker.
+- The owner search endpoint loads the event through `EventHelper` and checks for the GroupJive 4 classes before using them.
+- **Member names no longer log a PHP warning, and apostrophes display correctly.** The picker asked CB for names in a `text` format CB does not support, which logged a warning for every name and returned it HTML-escaped, so "O'Shea" showed as `O&#039;Shea`. It now reads the formatted name directly and shows it as plain text.
+
+### Changes
+
+- GroupJive 4 renders the picker after the Update/Cancel buttons. `owner-picker.js` moves it above them, where it was before. Without JavaScript it stays below the buttons, still inside the form.
+- On GroupJive 3.x the plugin loads but does nothing: no menu entry, no picker, no owner changes, and no errors. Keep 0.1.1 on a site that stays on GroupJive 3.x.
+
+### Upgrade order
+
+Update GroupJive to 4 and install this release together. Installing 0.2.0 first is safe: the owner control disappears until GroupJive 4 is installed. Updating GroupJive first with 0.1.1 still installed gives members HTTP 500 until 0.2.0 is installed.
+
+
 ## 0.1.1 (2026-08-06)
 
 **A build-workflow release with no functional changes.** Every shipped PHP, JavaScript and language file is byte-identical to 0.1.0; the only change to a packaged file is the `<release>` version in the manifest.

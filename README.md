@@ -19,7 +19,7 @@ Typical use: a club "Meet Officer" / secretary who schedules events and assigns 
 
 ## How it works
 
-- Hooks three GroupJive triggers — `gj_onDisplayEvent` (menu entry on existing events), `gj_onAfterDisplayEventEdit` (inserts the owner picker inside the native edit form, existing events only), and `gj_onBeforeUpdateEvent` (assigns the selected owner immediately before GroupJive's own `EventTable::store()` call) — so the reassignment rides on the **native** event edit/save lifecycle. No HTML rewriting, no template edits, no isolated database write outside that lifecycle.
+- Hooks three GroupJive triggers — `gj_onDisplayEvent` (menu entry on existing events), `gj_onAfterDisplayEventEdit` (adds the owner picker inside the native edit form, existing events only; GroupJive renders it after the buttons and `owner-picker.js` moves it above them), and `gj_onBeforeUpdateEvent` (assigns the selected owner immediately before GroupJive's own `EventTable::store()` call) — so the reassignment rides on the **native** event edit/save lifecycle. No HTML rewriting, no template edits, no isolated database write outside that lifecycle.
 - All authorization (form/CSRF token, actor's effective group status resolved from the session, target membership/account status) is enforced server-side on every save — the save hook re-verifies the token itself, since it also fires from token-less paths. The UI is never the security boundary; a forged or stale owner field is dropped (only the owner change — the rest of an authorized save proceeds).
 - The only other surface touched is a small JSON search endpoint (`format=raw`) backing the typeahead; it enforces its own token and event-access checks before returning member data.
 - The display trigger always returns an empty string after mutating the event menu, so GroupJive Events module surfaces do not render plugin content.
@@ -29,7 +29,7 @@ See [`docs/requirements.md`](docs/requirements.md) for the full design.
 ## Requirements
 
 - Joomla 5.x (PHP 8.1+)
-- Community Builder with **GroupJive** and the **GroupJive Events** plugin installed and active
+- Community Builder 2.12 with **GroupJive 4** and the **GroupJive Events** plugin installed and active. Release 0.2.0 dropped GroupJive 3.x; on 3.x the plugin loads but stays inert. Use 0.1.1 with GroupJive 3.x.
 
 ## Installation
 
